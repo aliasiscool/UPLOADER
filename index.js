@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve public HTML
+app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Public HTML access
 
 app.post('/upload', async (req, res) => {
   try {
@@ -63,5 +63,6 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
 
 
