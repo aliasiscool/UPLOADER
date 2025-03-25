@@ -42,14 +42,9 @@ app.post('/upload', async (req, res) => {
         text-align: center;
       }
       h1 {
-        margin-bottom: 20px;
-        font-size: 28px;
+        margin-bottom: 30px;
       }
-      img.logo {
-        max-height: 60px;
-        margin-bottom: 25px;
-      }
-      img.job-photo {
+      img {
         max-width: 90%;
         margin: 15px auto;
         border-radius: 8px;
@@ -59,11 +54,11 @@ app.post('/upload', async (req, res) => {
     </style>
   </head>
   <body>
-    <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg" alt="Company Logo">
     <h1>${title}</h1>
-    ${imageUrls.map(url => `<img class="job-photo" src="${url}" alt="Job Photo">`).join('\n')}
+    ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
   </body>
-</html>`;
+</html>
+`;
 
     fs.writeFileSync(clientFile, html);
 
@@ -79,3 +74,4 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
