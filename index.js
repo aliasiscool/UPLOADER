@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Public-facing folder
+app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve public HTML
 
 app.post('/upload', async (req, res) => {
   try {
@@ -18,20 +18,14 @@ app.post('/upload', async (req, res) => {
     }
 
     const imageUrls = image_urls_combined.split(',').map(url => url.trim());
-
-    // Make file URL-safe (e.g., replace spaces with underscores)
-    const safeName = name.trim().replace(/\s+/g, '_');
-    const clientFile = path.join(__dirname, 'clients', `${safeName}.html`);
-
-    // Generate clean title
-    const title = `Photos for ${name}'s Electrical Job`;
+    const clientFile = path.join(__dirname, 'clients', `${name}.html`);
 
     const html = `
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>${title}</title>
+    <title>Photos for ${name}'s Electrical Job</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     <style>
       body {
@@ -41,32 +35,38 @@ app.post('/upload', async (req, res) => {
         padding: 20px;
         text-align: center;
       }
-      h1 {
-        margin-bottom: 30px;
-      }
       img {
         max-width: 90%;
-        margin: 15px auto;
+        margin: 15px 0;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        display: block;
+      }
+      .error-msg {
+        color: white;
+        font-size: 1.2em;
+        margin: 10px 0;
       }
     </style>
   </head>
   <body>
-    <h1>${title}</h1>
-    ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
+    <h1>Photos for ${name}'s Electrical Job</h1>
+    ${imageUrls
+      .map(
+        (url) => `
+        <img src="${url}" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=\'error-msg\'>⚠️ Image File Corrupted</div>');">
+      `
+      )
+      .join('\n')}
   </body>
-</html>
-`;
+</html>`;
 
     fs.writeFileSync(clientFile, html);
 
-    const publicUrl = `https://${req.hostname}/clients/${safeName}.html`;
+    const publicUrl = `https://${req.hostname}/clients/${name}.html`;
     res.json({ success: true, url: publicUrl });
 
   } catch (err) {
-    console.error('❌ Error:', err.message);
+    console.error('Error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -74,4 +74,3 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
-
