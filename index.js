@@ -6,9 +6,11 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// Middleware
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Public HTML access
+app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve static HTML
 
+// POST /upload
 app.post('/upload', async (req, res) => {
   try {
     const { name, image_urls_combined } = req.body;
@@ -20,6 +22,7 @@ app.post('/upload', async (req, res) => {
     const imageUrls = image_urls_combined.split(',').map(url => url.trim());
     const clientFile = path.join(__dirname, 'clients', `${name}.html`);
 
+    // Construct HTML
     const html = `
 <!DOCTYPE html>
 <html>
@@ -35,6 +38,10 @@ app.post('/upload', async (req, res) => {
         padding: 20px;
         text-align: center;
       }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
       img {
         max-width: 90%;
         margin: 15px 0;
@@ -47,22 +54,27 @@ app.post('/upload', async (req, res) => {
     <h1>Photos for ${name}'s Electrical Job</h1>
     ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
   </body>
-</html>`;
+</html>
+`;
 
+    // Overwrite (or create) HTML file
     fs.writeFileSync(clientFile, html);
 
+    // Respond with the public URL
     const publicUrl = `https://${req.hostname}/clients/${name}.html`;
     res.json({ success: true, url: publicUrl });
 
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error('❌ Error in /upload:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+// Start the server
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
 
 
 
