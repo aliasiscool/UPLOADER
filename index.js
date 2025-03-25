@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve public HTML
+app.use('/clients', express.static(path.join(__dirname, 'clients')));
 
 app.post('/upload', async (req, res) => {
   try {
@@ -18,7 +18,11 @@ app.post('/upload', async (req, res) => {
     }
 
     const imageUrls = image_urls_combined.split(',').map(url => url.trim());
-    const clientFile = path.join(__dirname, 'clients', `${name}.html`);
+
+    // 👇 Sanitize filename by removing spaces
+    const safeFilename = name.replace(/\s+/g, '');
+
+    const clientFile = path.join(__dirname, 'clients', `${safeFilename}.html`);
 
     const html = `
 <!DOCTYPE html>
@@ -41,28 +45,17 @@ app.post('/upload', async (req, res) => {
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
       }
-      .error-msg {
-        color: white;
-        font-size: 1.2em;
-        margin: 10px 0;
-      }
     </style>
   </head>
   <body>
     <h1>Photos for ${name}'s Electrical Job</h1>
-    ${imageUrls
-      .map(
-        (url) => `
-        <img src="${url}" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=\'error-msg\'>⚠️ Image File Corrupted</div>');">
-      `
-      )
-      .join('\n')}
+    ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
   </body>
 </html>`;
 
     fs.writeFileSync(clientFile, html);
 
-    const publicUrl = `https://${req.hostname}/clients/${name}.html`;
+    const publicUrl = `https://${req.hostname}/clients/${safeFilename}.html`;
     res.json({ success: true, url: publicUrl });
 
   } catch (err) {
@@ -74,3 +67,4 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
