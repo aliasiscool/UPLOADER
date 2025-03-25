@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve client galleries
+app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Public-facing folder
 
 app.post('/upload', async (req, res) => {
   try {
@@ -18,14 +18,20 @@ app.post('/upload', async (req, res) => {
     }
 
     const imageUrls = image_urls_combined.split(',').map(url => url.trim());
-    const clientFile = path.join(__dirname, 'clients', `${name}.html`);
+
+    // Make file URL-safe (e.g., replace spaces with underscores)
+    const safeName = name.trim().replace(/\s+/g, '_');
+    const clientFile = path.join(__dirname, 'clients', `${safeName}.html`);
+
+    // Generate clean title
+    const title = `Photos for ${name}'s Electrical Job`;
 
     const html = `
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Photos for ${name}'s Electrical Job</title>
+    <title>${title}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     <style>
       body {
@@ -35,28 +41,31 @@ app.post('/upload', async (req, res) => {
         padding: 20px;
         text-align: center;
       }
+      h1 {
+        margin-bottom: 30px;
+      }
       img {
         max-width: 90%;
-        margin: 15px 0;
+        margin: 15px auto;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        display: block;
       }
     </style>
   </head>
   <body>
-    <h1>Photos for ${name}'s Electrical Job</h1>
+    <h1>${title}</h1>
     ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
   </body>
 </html>`;
 
-    // Write the HTML (override if it already exists)
     fs.writeFileSync(clientFile, html);
 
-    const publicUrl = `https://${req.hostname}/clients/${name}.html`;
+    const publicUrl = `https://${req.hostname}/clients/${safeName}.html`;
     res.json({ success: true, url: publicUrl });
 
   } catch (err) {
-    console.error('Error in /upload:', err.message);
+    console.error('❌ Error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -64,6 +73,7 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
 
 
 
