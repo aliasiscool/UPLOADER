@@ -49,7 +49,7 @@ app.post('/upload', async (req, res) => {
   </head>
   <body>
     <h1>Photos for ${name}'s Electrical Job</h1>
-    ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
+    ${imageUrls.map(url => `<img src="${url}" alt="⚠️ Image File Corrupted">`).join('\n')}
   </body>
 </html>`;
 
