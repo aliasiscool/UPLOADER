@@ -6,11 +6,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Middleware
 app.use(bodyParser.json());
-app.use('/clients', express.static(path.join(__dirname, 'clients'))); // Serve static HTML
+app.use('/clients', express.static(path.join(__dirname, 'clients')));
 
-// POST /upload
 app.post('/upload', async (req, res) => {
   try {
     const { name, image_urls_combined } = req.body;
@@ -19,49 +17,51 @@ app.post('/upload', async (req, res) => {
       return res.status(400).json({ error: 'Missing name or image_urls_combined' });
     }
 
+    console.log(`📩 Upload requested for ${name}`);
+
+    // Format name: file-safe and readable
+    const safeFileName = name.toLowerCase().replace(/\s+/g, '');
+    const clientFile = path.join(__dirname, 'clients', `${safeFileName}.html`);
+
+    // Start fresh: overwrite HTML every time
+    const title = `Photos for ${name}'s Electrical Job`;
+    let html = `
+      <html>
+        <head>
+          <title>${title}</title>
+          <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+          <style>
+            body {
+              background-color: #0F3325;
+              color: white;
+              font-family: 'Poppins', sans-serif;
+              padding: 20px;
+            }
+            img {
+              max-width: 100%;
+              margin-bottom: 10px;
+              border-radius: 6px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+            h1 {
+              margin-bottom: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+    `;
+
     const imageUrls = image_urls_combined.split(',').map(url => url.trim());
-    const clientFile = path.join(__dirname, 'clients', `${name}.html`);
+    imageUrls.forEach(url => {
+      html += `<img src="${url}" alt="Image"><br>`;
+    });
 
-    // Construct HTML
-    const html = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Photos for ${name}'s Electrical Job</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-    <style>
-      body {
-        background-color: #0F3325;
-        font-family: 'Poppins', sans-serif;
-        color: white;
-        padding: 20px;
-        text-align: center;
-      }
-      h1 {
-        font-size: 28px;
-        margin-bottom: 30px;
-      }
-      img {
-        max-width: 90%;
-        margin: 15px 0;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Photos for ${name}'s Electrical Job</h1>
-    ${imageUrls.map(url => `<img src="${url}" alt="Job Photo">`).join('\n')}
-  </body>
-</html>
-`;
+    html += `</body></html>`;
 
-    // Overwrite (or create) HTML file
     fs.writeFileSync(clientFile, html);
 
-    // Respond with the public URL
-    const publicUrl = `https://${req.hostname}/clients/${name}.html`;
+    const publicUrl = `https://${req.hostname}/clients/${safeFileName}.html`;
     res.json({ success: true, url: publicUrl });
 
   } catch (err) {
@@ -70,10 +70,10 @@ app.post('/upload', async (req, res) => {
   }
 });
 
-// Start the server
 app.listen(PORT, () => {
-  console.log(`✅ Server live at port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
+
 
 
 
