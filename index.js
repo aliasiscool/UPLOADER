@@ -49,7 +49,12 @@ app.post('/upload', async (req, res) => {
   </head>
   <body>
     <h1>Photos for ${name}'s Electrical Job</h1>
-    ${imageUrls.map(url => `<img src="${url}" alt="⚠️ Image File Corrupted">`).join('\n')}
+  ${imageUrls.map(url => `
+  <a href="${url}" target="_blank">
+    <img src="${url}" alt="⚠️ Image File Corrupted" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<div style=\'margin:10px 0; color:#ccc; font-size:14px;\'>⚠️ Image couldn\\'t load. <a href=\'${url}\' target=\'_blank\' style=\'color:#fff;text-decoration:underline;\'>Click here</a> to view it.</div>')">
+  </a>
+`).join('\n')}
+
   </body>
 </html>`;
 
