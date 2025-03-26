@@ -17,7 +17,9 @@ app.post('/upload', async (req, res) => {
       return res.status(400).json({ error: 'Missing name or image_urls_combined' });
     }
 
-    const imageUrls = image_urls_combined.split(',').map(url => url.trim());
+    const imageUrls = image_urls_combined
+      .split(',')
+      .map(url => url.trim().replace(/^{|}$/g, '')); // 🧼 remove surrounding curly braces
 
     // 👇 Sanitize filename by removing spaces
     const safeFilename = name.replace(/\s+/g, '');
@@ -77,4 +79,5 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
 
