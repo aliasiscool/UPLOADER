@@ -45,11 +45,21 @@ app.post('/upload', async (req, res) => {
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
       }
+      p {
+        font-size: 12px;
+        color: #ccc;
+        word-break: break-all;
+      }
     </style>
   </head>
   <body>
     <h1>Photos for ${name}'s Electrical Job</h1>
-    ${imageUrls.map(url => `<img src="${url}" alt="⚡">`).join('\n')}
+    ${imageUrls.map(url => `
+      <div>
+        <img src="${url}" alt="⚡">
+        <p>${url}</p>
+      </div>
+    `).join('\n')}
   </body>
 </html>`;
 
@@ -67,3 +77,4 @@ app.post('/upload', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server live at port ${PORT}`);
 });
+
